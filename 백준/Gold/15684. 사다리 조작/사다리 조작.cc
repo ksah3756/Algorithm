@@ -3,7 +3,7 @@
 using namespace std;
 int h, n, m;
 bool ladder[11][31][2]; // 왼쪽 or 오른쪽
-bool solve(int);
+void solve(int);
 bool checkIfPossible();
 int cnt, depth;
 
@@ -22,35 +22,35 @@ int main() {
     cnt = 0;
     while(cnt <= 3) {
         depth = 0;
-        if(solve(1)) {
-            cout << cnt << '\n';
-            return 0;
-        }
+        solve(1);
         cnt++;
     }
     cout << -1 << '\n';
     return 0;
 }
 
-bool solve(int sx) {
+void solve(int sx) {
     if(depth == cnt) {
-        return checkIfPossible();
+        if(checkIfPossible()) {
+            cout << cnt << '\n';
+            exit(0);
+        }
+        return;
     }
 
     for(int i = sx; i < n; i++) { // 1~n-1에 대해 오른쪽으로만 사다리 설치 할 수 있는지 체크 아놔 조합으로 해야하는데 순열로 풀고있었네
         for(int j = 1; j <= h; j++) {
-            if(!ladder[i][j][1] && !ladder[i+1][j][1]) {
+            if(!ladder[i][j][0] && !ladder[i][j][1] && !ladder[i+1][j][1]) {
                 ladder[i][j][1] = 1;
                 ladder[i+1][j][0] = 1;
                 depth++;
-                if(solve(i)) return true;
+                solve(i);
                 ladder[i][j][1] = 0;
                 ladder[i+1][j][0] = 0;
                 depth--;
             }
         }
     }
-    return false;
 }
 
 bool checkIfPossible() {
