@@ -8,7 +8,7 @@ int radius[3001];
 int parent[3001], sze[3001];
 int calculateDist(int,int);
 int find(int);
-void unionSet(int,int);
+bool unionSet(int,int);
 
 int main() {
     ios_base::sync_with_stdio(0);
@@ -27,17 +27,15 @@ int main() {
             radius[i] = r;
         }
 
+        int cnt = n;
         for(int i = 0; i < n-1; i++) {
             for(int j = i+1; j < n; j++) {
                 int dist = pow(radius[i]+radius[j], 2);
-                if(calculateDist(i,j) <= dist) 
-                    unionSet(i,j);
+                if(calculateDist(i,j) <= dist) {
+                    if(unionSet(i,j))
+                        cnt--;
+                }
             }
-        }
-
-        int cnt = 0;
-        for(int i = 0; i < n; i++) {
-            if(i == parent[i]) cnt++;
         }
         cout << cnt << '\n';
     }
@@ -53,15 +51,16 @@ int find(int n) {
     return parent[n] = find(parent[n]);
 }
 
-void unionSet(int a, int b) {
+bool unionSet(int a, int b) {
     int pa = find(a);
     int pb = find(b);
 
-    if(pa == pb) return;
+    if(pa == pb) return false;
     if(sze[pa] < sze[pb]) swap(pa, pb);
 
     parent[pb] = pa;
     int size = sze[pa] + sze[pb];
     sze[pa] = size;
     sze[pb] = size;
+    return true;
 }
