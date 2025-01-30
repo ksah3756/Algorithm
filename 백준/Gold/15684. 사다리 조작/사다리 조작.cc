@@ -38,7 +38,7 @@ bool solve(int sx) {
     }
 
     for(int i = sx; i < n; i++) { // 1~n-1에 대해 오른쪽으로만 사다리 설치 할 수 있는지 체크 아놔 조합으로 해야하는데 순열로 풀고있었네
-        for(int j = 0; j <= h; j++) {
+        for(int j = 1; j <= h; j++) {
             if(!ladder[i][j][1]) {
                 if(i == n-1) {
                     ladder[i][j][1] = 1;
