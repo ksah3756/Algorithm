@@ -15,7 +15,10 @@ string solution(vector<string> participant, vector<string> completion) {
     }
     
     for(auto m: um) {
-        if(m.second != 0) answer = m.first;
+        if(m.second != 0) {
+            answer = m.first;
+            break;
+        }
     }
     return answer;
 }
