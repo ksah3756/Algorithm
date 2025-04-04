@@ -22,9 +22,8 @@ void solve(vector<int>& picks, int idx, int cost) {
     for(int i = 0; i < 3; i++) {
         int nxtCost = cost;
         if(picks[i]) {
-            int j = idx;
-            while(j < idx+5 && j < mins.size()) {
-                nxtCost += table[i][mins[j++]];
+            for(int j = 0; j < 5 && idx+j < mins.size(); j++) {
+                nxtCost += table[i][mins[idx+j]];
             }
             picks[i]--;
             solve(picks, idx+5, nxtCost);
