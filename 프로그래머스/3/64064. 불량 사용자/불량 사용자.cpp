@@ -2,72 +2,50 @@
 
 using namespace std;
 
-// 10:00
-// *은 그냥 넘어가면 되고 가능한 경우의 수를 구했을 때 순서 상관없으니 중복을 어떻게 처리할 지가 문제인데
-// 그냥 가능한 user_id 쭉 놓고 방문처리해서 중복 못하게 하고
-// 후보 케이스들 정렬해서 set에 넣기?
-// user_id는 서로 다 다르니까 문자열 합쳐서 set에 넣으면 될거같은데
-// 일치하는 패턴이 없을 수도 있는건가?
-vector<vector<int>> candidates;
-vector<vector<int>> possibles;
-bool visited[9];
-void dfs(int idx, vector<int>& v);
+vector<int> candidate[9];
+unordered_set<int> s;
+int banSize, userSize;
+
+bool isCandidate(string& uid, string& bid) {
+    if(uid.size() != bid.size()) return false;
+    
+    for(int i = 0; i < bid.size(); i++) {
+        if(bid[i] != '*' && uid[i] != bid[i]) return false;
+    }
+    return true;
+}
+
+void dfs(int idx, int bits) {
+    if(idx == banSize) {
+        s.insert(bits);
+        return;
+    }
+    
+    for(int i : candidate[idx]) {
+        if(!(bits & 1 << i)) {
+            int prevBits = bits;
+            bits |= (1 << i);
+            dfs(idx+1, bits);
+            bits = prevBits; 
+        }
+    }
+} 
 
 int solution(vector<string> user_id, vector<string> banned_id) {
     int answer = 0;
     
-    candidates.resize(banned_id.size(), vector<int>());
+    banSize = banned_id.size();
+    userSize = user_id.size();
     
-    for(int i = 0; i < banned_id.size(); i++) {
-        string banId = banned_id[i];
-        for(int j = 0; j < user_id.size(); j++) {
-            string userId = user_id[j];
-            if(banId.size() != userId.size()) continue;
-            
-            bool isPossible = 1;
-            for(int k = 0; k < banId.size(); k++) {
-                if(banId[k] == '*') continue;
-                if(userId[k] != banId[k]) {
-                    isPossible = 0;
-                    break;
-                }
-            }
-            if(isPossible) candidates[i].push_back(j);
+    for(int i = 0; i < banSize; i++) {
+        for(int j = 0; j < userSize; j++) {
+            if(isCandidate(user_id[j], banned_id[i]))
+                candidate[i].push_back(j);
         }
     }
     
-    vector<int> v;
-    dfs(0, v);
+    dfs(0, 0);
     
-    unordered_set<int> set;
-    // 모든 possible 배열에 대해 정렬하고 문자열 하나로 합쳐서 set에 넣어 사이즈 구하기
-    for(vector<int>& v : possibles) {
-        sort(v.begin(), v.end());
-        int id = 0;
-        for(int i : v) {
-            id *= 10;
-            id += i;
-        }
-        set.insert(id);
-    }
-
-    answer = set.size();    
-    
+    answer = s.size();
     return answer;
-}
-
-void dfs(int idx, vector<int>& v) {
-    if(idx == candidates.size()) {
-        possibles.push_back(v);
-        return;
-    }
-    for(int i : candidates[idx]) {
-        if(!visited[i]) {
-            v.push_back(i);
-            visited[i] = 1;
-            dfs(idx+1, v);
-            v.pop_back();
-            visited[i] = 0;
-        }
-    }
 }
