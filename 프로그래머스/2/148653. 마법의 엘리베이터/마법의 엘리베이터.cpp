@@ -1,22 +1,23 @@
 #include <string>
 #include <vector>
-#include <iostream>
 
-// 10:00
-// 뒷자리에서부터 0으로 만들어야 하는데 빼기 또는 더하기
-// 마지막 제일 큰 자리는 5 이하면 x, 5 초과면 1
 using namespace std;
 
-int ans = 1e+8+1;
-void solve(int cur, int cnt) {
-    if(cur < 10) {
-        int tmp = min(cnt+cur, cnt+11-cur);
-        ans = min(ans, tmp);
+// 0~4
+// 5는 +든 -든 똑같이 5회필요한데
+// +랑 - 두 경우에 대해 계속 확인?
+// 근데 마지막 자리는 올릴경우 무조건 1회 추가
+int ans = 1e+9;
+void solve(int floor, int cnt) {
+    if(floor/10 == 0) {
+        ans = min(ans, cnt + min(11-floor, floor));
         return;
     }
-    int x = cur % 10;
-    solve(cur/10, cnt+x);
-    solve(cur/10 + 1, cnt+10-x);
+    
+    int cur = floor % 10;
+    int nxt = floor / 10;
+    solve(nxt+1, cnt+10-cur);
+    solve(nxt, cnt+cur);
 }
 
 int solution(int storey) {
