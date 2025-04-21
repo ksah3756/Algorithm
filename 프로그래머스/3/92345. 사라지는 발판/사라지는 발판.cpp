@@ -1,102 +1,65 @@
-#include <string>
-#include <vector>
+#include <bits/stdc++.h>
 
 using namespace std;
 typedef pair<int,int> pii;
 typedef pair<int,bool> pib;
-
 int dy[4] = {-1,1,0,0};
 int dx[4] = {0,0,-1,1};
-
-int n, m;
-int ans = 0;
-int aWinCnt, bWinCnt;
-vector<vector<int>> bboard;
-
-// 매 단계 게임이 종료할때까지 판단하고 내가 이길 수 있는 수가 있으면 그 수 중 가장 게임 횟수가 작은걸 반환, 내가 이길 수 없으면 가장 게임 횟수가 긴 걸 반환
-
-vector<pii> getNextCoord(const pii& p) {
-    int y = p.first;
-    int x = p.second;
-    vector<pii> candidates;
-    
-    for(int i = 0; i < 4; i++) {
-        int ny = y + dy[i];
-        int nx = x + dx[i];
-        
-        if(0 <= ny && ny < n && 0 <= nx && nx < m) {
-            if(bboard[ny][nx] == 1) {
-                candidates.push_back({ny,nx});
-            }
-        }
-    }
-    return candidates;
-}
-
-// A 이기면 0, B 이기면 1 리턴
-pib solve(pii aloc, pii bloc, int cnt, int turn) {
-    pib res;
-    int winCnt = 26, loseCnt = -1;
-    if(turn == 0) { // A 차례
-        if(bboard[aloc.first][aloc.second] == 0) { // A 패배
-            return {cnt, 1};
-        }
-        vector<pii> nexts = getNextCoord(aloc);
-        bool isAWinnable = 0;
-        if(!nexts.empty()) {
-            for(pii p : nexts) {
-                bboard[aloc.first][aloc.second] = 0;
-                res = solve(p, bloc, cnt+1, 1-turn);
-                if(res.second == 0) { // A 승리
-                    isAWinnable = 1;
-                    winCnt = min(winCnt, res.first);
-                } else {
-                    loseCnt = max(loseCnt, res.first);    
-                }
-                
-                bboard[aloc.first][aloc.second] = 1;
-            }
-            if(isAWinnable) return {winCnt, 0};
-            else return {loseCnt, 1}; 
-        } else {
-            return {cnt, 1};
-        }
-    } else { // B 차례
-        if(bboard[bloc.first][bloc.second] == 0) {
-            return {cnt, 0};
-        }
-        vector<pii> nexts = getNextCoord(bloc);
-        bool isBWinnable = 0;
-        if(!nexts.empty()) {
-            for(pii p : nexts) {
-                int y = p.first;
-                int x = p.second;
-                bboard[bloc.first][bloc.second] = 0;
-                res = solve(aloc, p, cnt+1, 1-turn);
-                if(res.second == 1) {
-                    isBWinnable = 1;
-                    winCnt = min(winCnt, res.first);
-                } else {
-                    loseCnt = max(loseCnt, res.first);
-                }
-                bboard[bloc.first][bloc.second] = 1;
-            }
-            if(isBWinnable) return {winCnt, 1};
-            else return {loseCnt, 0};
-        } else {
-            return {cnt, 0};
-        }
-    }
-}
-
+const int INF = 1e+8;
 
 int solution(vector<vector<int>> board, vector<int> aloc, vector<int> bloc) {
     int answer = -1;
-    n = board.size();
-    m = board[0].size();
-    bboard = board;
+    int n = board.size();
+    int m = board[0].size();
     
-    pib res = solve({aloc[0], aloc[1]}, {bloc[0], bloc[1]}, 0, 0);
-    answer = res.first;
+    function<pib(pii, pii, int, bool)> solve;
+    
+    // bool이 0이면 A, 1이면 B
+    solve = [&](pii pa, pii pb, int cnt, bool turn) -> pib {
+        int y, x, ny, nx;
+        int winCnt = INF, loseCnt = -1;
+
+        if(!turn) {
+            y = pa.first;
+            x = pa.second;
+        } else {
+            y = pb.first;
+            x = pb.second;
+        }
+
+        if(!board[y][x]) return {cnt, !turn};
+
+        bool isPlayable = 0;
+        for(int i = 0; i < 4; i++) {
+            ny = y + dy[i];
+            nx = x + dx[i];
+
+            if(!(0 <= ny && ny < n && 0 <= nx && nx < m)) continue;
+            if(!board[ny][nx]) continue;
+
+            isPlayable = 1;
+            pib res;
+            board[y][x] = 0;
+            if(!turn) 
+                res = solve({ny,nx}, pb, cnt+1, !turn);
+            else
+                res = solve(pa, {ny,nx}, cnt+1, !turn);
+
+            board[y][x] = 1;
+
+            if(turn == res.second) // 내가 이긴 경우
+                winCnt = min(winCnt, res.first);
+            else // 상대방이 이긴 경우
+                loseCnt = max(loseCnt, res.first);
+        }
+        
+        if(!isPlayable) return {cnt, !turn};
+
+        if(winCnt == INF) return {loseCnt, !turn};
+        else return {winCnt, turn};
+    };
+    
+
+    answer = solve({aloc[0], aloc[1]}, {bloc[0], bloc[1]}, 0, 0).first;
     return answer;
 }
