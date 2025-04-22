@@ -1,51 +1,27 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-// 4:38
-// 트라이에 리프 노드까지 도달하는 문자 수를 합하기?
-typedef struct Node {
-    char val;
-    unordered_map<char, Node*> child;
-    bool isUnique;
-    
-    Node(char val, bool isUnique) : val(val), isUnique(isUnique) {}
-} Node;
 
-Node* root;
-
+// 정렬하면 본인 앞 뒤 중 하나가 본인과 prefix가 가장 많이 일치하는 문자열이고 이 prefix 길이+1 필요
 int solution(vector<string> words) {
     int answer = 0;
     
-    root = new Node('0', 0);
+    sort(words.begin(), words.end());
     
-    for(string& word : words) {
-        int i = 0;
-        Node* cur = root;
-        while(i < word.size()) {
-            if(cur->child.find(word[i]) == cur->child.end()) {
-                cur->child.insert({word[i], new Node(word[i], 1)});
-            } else {
-                cur->child[word[i]]->isUnique = 0;
-            }
-            cur = cur->child[word[i]];
-            i++;
-        }
+    auto getPrefixLen = [&](const string& s1, const string& s2) -> int {
+        int idx = 0;
+        while(idx < s1.size() && idx < s2.size() && s1[idx] == s2[idx]) idx++;
+        if(idx == s1.size()) return idx;
+        else return idx+1;
+    };
+    
+    answer += getPrefixLen(words[0], words[1]);
+    
+    for(int i = 1; i < words.size()-1; i++) {
+        answer += max(getPrefixLen(words[i], words[i-1]), getPrefixLen(words[i], words[i+1])); 
     }
     
-    for(string& word : words) {
-        Node* cur = root;
-        int i = 0;
-        while(i < word.size()) {
-            // cout << word[i] << ' ' << cur->isUnique << ' ';
-            if(cur->isUnique) {
-                break;
-            }
-            cur = cur->child[word[i++]];
-        }
-        answer += i;
-        cout << '\n';
-    }
+    answer += getPrefixLen(words[words.size()-1], words[words.size()-2]);
     
-
     return answer;
 }
