@@ -1,0 +1,13 @@
+-- 코드를 입력하세요
+SELECT
+    ao.ANIMAL_ID, ao.NAME
+FROM 
+    ANIMAL_OUTS ao
+LEFT JOIN
+    ANIMAL_INS ai
+    ON ao.ANIMAL_ID = ai.ANIMAL_ID
+WHERE 
+    ai.INTAKE_CONDITION is NULL
+ORDER BY 
+    ao.ANIMAL_ID
+;
