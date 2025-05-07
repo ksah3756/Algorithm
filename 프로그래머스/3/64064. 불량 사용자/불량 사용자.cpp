@@ -1,51 +1,50 @@
 #include <bits/stdc++.h>
 
 using namespace std;
-
-vector<int> candidate[9];
-unordered_set<int> s;
-int banSize, userSize;
-
-bool isCandidate(string& uid, string& bid) {
-    if(uid.size() != bid.size()) return false;
-    
-    for(int i = 0; i < bid.size(); i++) {
-        if(bid[i] != '*' && uid[i] != bid[i]) return false;
-    }
-    return true;
-}
-
-void dfs(int idx, int bits) {
-    if(idx == banSize) {
-        s.insert(bits);
-        return;
-    }
-    
-    for(int i : candidate[idx]) {
-        if(!(bits & 1 << i)) {
-            int prevBits = bits;
-            bits |= (1 << i);
-            dfs(idx+1, bits);
-            bits = prevBits; 
-        }
-    }
-} 
-
+// 10:42
+// banned_id 별로 가능한 후보 user_id가 어떤건지 파악
+// 비트마스크로 후보 표현하고 각 banned_id에 대해 후보 중 하나 선택해서 set에 추가해서 몇개의 개수가 나오는 지 세기
 int solution(vector<string> user_id, vector<string> banned_id) {
     int answer = 0;
     
-    banSize = banned_id.size();
-    userSize = user_id.size();
-    
-    for(int i = 0; i < banSize; i++) {
-        for(int j = 0; j < userSize; j++) {
-            if(isCandidate(user_id[j], banned_id[i]))
-                candidate[i].push_back(j);
+    auto isCandidate = [&](string& uid, string& bid) -> bool {  
+        if(uid.size() != bid.size()) return false;
+        
+        for(int i = 0; i < uid.size(); i++) {
+            if(bid[i] == '*') continue;
+            if(uid[i] != bid[i]) return false;
         }
+        return true;
+    };
+    
+    vector<int> candidates;
+    
+    for(string &bid : banned_id) {
+        int bitset = 0;
+        for(int i = 0; i < user_id.size(); i++) {
+            if(isCandidate(user_id[i], bid)) bitset = bitset | (1<<i);
+        }
+        candidates.push_back(bitset);
     }
     
-    dfs(0, 0);
+    unordered_set<int> s;
     
+    function<void(int,int)> solve;
+    solve = [&](int idx, int pick) -> void {
+        if(idx == candidates.size()) {
+            s.insert(pick);
+            return;
+        }
+        
+        for(int i = 0; i < user_id.size(); i++) {
+            if(((1 << i) & candidates[idx])
+               && !(pick & (1<<i))) {
+                solve(idx+1, pick | (1 <<i));
+            }
+        }
+    };
+    
+    solve(0, 0);
     answer = s.size();
     return answer;
 }
