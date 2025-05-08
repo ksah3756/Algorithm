@@ -22,8 +22,7 @@ vector<int> solution(vector<int> sequence, int k) {
             else break;
         }
         
-        while(s < e && sum > k) sum -= sequence[s++];
-        if(s == e && sum > k) break;
+        while(sum > k) sum -= sequence[s++];
     }
     return answer;
 }
