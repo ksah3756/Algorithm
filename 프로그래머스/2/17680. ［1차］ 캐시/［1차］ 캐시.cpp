@@ -12,21 +12,19 @@ int solution(int cacheSize, vector<string> cities) {
     
     for(string& city : cities) {
         transform(city.begin(), city.end(), city.begin(), ::tolower);
-        
-        if(map.find(city) == map.end()) { // miss
-            if(cache.size() == cacheSize) { // LRU policy 적용
-                string lru = cache.back(); cache.pop_back();
-                map.erase(lru);
-            }
-            answer += 5;
-        } else { // hit
+        if(map.find(city) != map.end()) {
+            answer++;
             auto iter = map[city];
             cache.erase(iter);
-            answer += 1;
+        } else {
+            answer += 5;
+            if(cache.size() == cacheSize) {
+                string s = cache.back(); cache.pop_back();
+                map.erase(s);
+            }
         }
         cache.push_front(city);
-        map[city] = cache.begin();
+        map.insert({city, cache.begin()});   
     }
-    
     return answer;
 }
